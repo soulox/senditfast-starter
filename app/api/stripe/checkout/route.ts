@@ -2,6 +2,9 @@ import { requireUser } from '@lib/get-user';
 import { authorizenet } from '@lib/authorizenet';
 import { z } from 'zod';
 
+export const runtime = 'edge';
+
+
 const checkoutSchema = z.object({
   plan: z.enum(['PRO', 'BUSINESS']),
 });

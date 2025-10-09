@@ -3,6 +3,9 @@ import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 import { z } from 'zod';
 
+export const runtime = 'edge';
+
+
 const paymentSchema = z.object({
   plan: z.enum(['PRO', 'BUSINESS']),
   opaqueData: z.object({

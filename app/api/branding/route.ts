@@ -3,6 +3,9 @@ import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 import { z } from 'zod';
 
+export const runtime = 'edge';
+
+
 const brandingSchema = z.object({
   logo_url: z.string().url().nullable(),
   primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/),

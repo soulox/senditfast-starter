@@ -3,6 +3,9 @@ import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 import { deleteFile } from '@lib/b2';
 
+export const runtime = 'edge';
+
+
 export async function DELETE(req: NextRequest) {
   try {
     const user = await requireUser();

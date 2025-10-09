@@ -3,6 +3,9 @@ import { sql } from '@lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
+export const runtime = 'edge';
+
+
 const resetPasswordSchema = z.object({
   token: z.string(),
   password: z.string().min(8)

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 
+export const runtime = 'edge';
+
+
 export async function GET(req: NextRequest) {
   try {
     const user = await requireUser();

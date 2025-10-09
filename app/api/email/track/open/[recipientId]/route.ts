@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@lib/db';
 
+export const runtime = 'edge';
+
+
 // 1x1 transparent GIF
 const TRACKING_PIXEL = Buffer.from(
   'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',

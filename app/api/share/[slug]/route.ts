@@ -34,6 +34,9 @@ export async function GET(
     const files = await sql`
       select id, name, size_bytes, content_type
       from file_object 
+
+export const runtime = 'edge';
+
       where transfer_id = ${t.id}
     ` as any;
 

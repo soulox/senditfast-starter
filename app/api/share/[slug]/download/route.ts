@@ -28,6 +28,9 @@ export async function GET(
     const [row] = await sql`
       select fo.b2_key, fo.name, fo.size_bytes, fo.content_type 
       from file_object fo
+
+export const runtime = 'edge';
+
       join transfer t on t.id = fo.transfer_id
       where t.slug = ${slug} 
         and t.status = 'ACTIVE' 

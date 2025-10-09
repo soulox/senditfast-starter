@@ -3,6 +3,9 @@ import { requireUser } from '@lib/get-user';
 import { sendTransferEmail } from '@lib/email';
 import { z } from 'zod';
 
+export const runtime = 'edge';
+
+
 const notifySchema = z.object({
   recipients: z.array(z.string().email()),
   message: z.string().optional(),

@@ -2,6 +2,9 @@ import { stripe } from '@lib/stripe';
 import { sql } from '@lib/db';
 import Stripe from 'stripe';
 
+export const runtime = 'edge';
+
+
 export async function POST(req: Request) {
   // Stripe webhooks are deprecated - using Authorize.Net instead
   // This endpoint is kept for backwards compatibility only

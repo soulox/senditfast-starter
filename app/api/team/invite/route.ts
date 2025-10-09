@@ -3,6 +3,9 @@ import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 import { z } from 'zod';
 
+export const runtime = 'edge';
+
+
 const inviteSchema = z.object({
   email: z.string().email(),
   name: z.string().optional(),

@@ -46,6 +46,9 @@ export async function DELETE(
     const files = await sql`
       select b2_key 
       from file_object 
+
+export const runtime = 'edge';
+
       where transfer_id = ${id}
     ` as any[];
 

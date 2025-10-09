@@ -4,6 +4,9 @@ import { sql } from '@lib/db';
 import speakeasy from 'speakeasy';
 import { z } from 'zod';
 
+export const runtime = 'edge';
+
+
 const verifySchema = z.object({
   token: z.string().length(6)
 });
