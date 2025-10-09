@@ -87,7 +87,7 @@ export async function POST(req: Request) {
         select count(*)::int as count
         from transfer
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
         where owner_id = ${userId}
         and created_at >= ${startOfMonth.toISOString()}

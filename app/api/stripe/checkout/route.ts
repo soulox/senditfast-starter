@@ -2,7 +2,7 @@ import { requireUser } from '@lib/get-user';
 import { authorizenet } from '@lib/authorizenet';
 import { z } from 'zod';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 const checkoutSchema = z.object({

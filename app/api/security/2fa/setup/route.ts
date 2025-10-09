@@ -3,7 +3,7 @@ import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 import speakeasy from 'speakeasy';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 export async function POST(req: NextRequest) {

@@ -47,7 +47,7 @@ export async function DELETE(
       select b2_key 
       from file_object 
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
       where transfer_id = ${id}
     ` as any[];

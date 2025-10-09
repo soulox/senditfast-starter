@@ -1,15 +1,60 @@
 const fs = require('fs');
 const path = require('path');
 
-// Routes that MUST use Node.js runtime (because they need crypto or other Node.js modules)
+// Routes that MUST use Node.js runtime (because they use NextAuth or crypto)
+// NextAuth v4 does NOT support Edge Runtime, so ALL authenticated routes must use nodejs
 const nodeJsRoutes = [
-  'app/api/auth/[...nextauth]/route.ts',        // NextAuth requires Node.js
-  'app/api/auth/forgot-password/route.ts',      // Uses crypto
-  'app/api/auth/reset-password/route.ts',       // Might use crypto
+  // Auth routes
+  'app/api/auth/[...nextauth]/route.ts',
+  'app/api/auth/forgot-password/route.ts',
+  'app/api/auth/reset-password/route.ts',
   'app/api/auth/reset-password/validate/route.ts',
-  'app/api/auth/register/route.ts',             // Uses bcrypt
-  'app/api/api-keys/create/route.ts',           // Uses crypto
-  'app/api/authorizenet/webhook/route.ts',      // Uses crypto for signatures
+  'app/api/auth/register/route.ts',
+  'app/api/auth/dev-login/route.ts',
+  
+  // Admin routes (use requireUser)
+  'app/api/admin/change-plan/route.ts',
+  'app/api/admin/cleanup/route.ts',
+  
+  // Analytics (uses requireUser)
+  'app/api/analytics/route.ts',
+  
+  // API Keys (use requireUser + crypto)
+  'app/api/api-keys/route.ts',
+  'app/api/api-keys/create/route.ts',
+  'app/api/api-keys/[id]/route.ts',
+  
+  // Payment routes (use requireUser + authorizenet with crypto)
+  'app/api/stripe/checkout/route.ts',
+  'app/api/authorizenet/process-payment/route.ts',
+  'app/api/authorizenet/webhook/route.ts',
+  
+  // Branding (uses requireUser)
+  'app/api/branding/route.ts',
+  
+  // Privacy (uses requireUser)
+  'app/api/privacy/export/route.ts',
+  'app/api/privacy/delete-account/route.ts',
+  
+  // Security/2FA (uses requireUser)
+  'app/api/security/2fa/status/route.ts',
+  'app/api/security/2fa/setup/route.ts',
+  'app/api/security/2fa/verify/route.ts',
+  'app/api/security/2fa/disable/route.ts',
+  
+  // Team (uses requireUser)
+  'app/api/team/route.ts',
+  'app/api/team/invite/route.ts',
+  'app/api/team/[id]/route.ts',
+  
+  // Transfers (uses requireUser)
+  'app/api/transfers/route.ts',
+  'app/api/transfers/create/route.ts',
+  'app/api/transfers/[id]/notify/route.ts',
+  'app/api/transfers/[id]/delete/route.ts',
+  
+  // Upload (uses requireUser)
+  'app/api/upload/parts/route.ts',
 ];
 
 function updateRuntime(filePath, runtime) {

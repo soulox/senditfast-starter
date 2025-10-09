@@ -3,7 +3,7 @@ import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 import { deleteFile } from '@lib/b2';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 export async function DELETE(req: NextRequest) {

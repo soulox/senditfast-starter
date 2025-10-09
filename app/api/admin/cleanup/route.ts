@@ -3,7 +3,7 @@ import { cleanupExpiredTransfers, getCleanupStats } from '@lib/cleanup';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@lib/auth';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 /**

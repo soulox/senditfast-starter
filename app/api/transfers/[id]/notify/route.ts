@@ -3,7 +3,7 @@ import { requireUser } from '@lib/get-user';
 import { sendTransferEmail } from '@lib/email';
 import { z } from 'zod';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 const notifySchema = z.object({

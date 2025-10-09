@@ -10,7 +10,7 @@ export async function GET() {
       select id, slug, total_size_bytes, status, created_at, expires_at
       from transfer
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
       where owner_id = ${userId}
       order by created_at desc
