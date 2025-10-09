@@ -3,7 +3,7 @@ import { sql } from '@lib/db';
 import { z } from 'zod';
 import crypto from 'crypto';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 const forgotPasswordSchema = z.object({

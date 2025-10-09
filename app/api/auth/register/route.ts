@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { rateLimit, getRateLimitIdentifier, rateLimitResponse, RATE_LIMITS } from '@lib/rate-limit';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 const registerSchema = z.object({

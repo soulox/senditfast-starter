@@ -5,7 +5,7 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 const createKeySchema = z.object({

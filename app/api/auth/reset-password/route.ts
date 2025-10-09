@@ -3,7 +3,7 @@ import { sql } from '@lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 const resetPasswordSchema = z.object({
