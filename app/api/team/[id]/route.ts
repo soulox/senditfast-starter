@@ -26,7 +26,7 @@ export async function DELETE(
       DELETE FROM team_member
       WHERE id = ${memberId} AND owner_id = ${userId}
       RETURNING id
-    `;
+    ` as any[];
 
     if (result.length === 0) {
       return NextResponse.json(
