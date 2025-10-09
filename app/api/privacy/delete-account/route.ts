@@ -16,11 +16,11 @@ export async function DELETE(req: NextRequest) {
       FROM file_object f
       JOIN transfer t ON t.id = f.transfer_id
       WHERE t.owner_id = ${userId}
-    `;
+    ` as any[];
 
     // Delete files from B2
     console.log(`[Privacy] Deleting ${files.length} files from B2`);
-    for (const file of files as any[]) {
+    for (const file of files) {
       try {
         await deleteFile(file.b2_key);
       } catch (error) {
