@@ -47,9 +47,6 @@ export async function DELETE(
       select b2_key 
       from file_object 
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
       where transfer_id = ${id}
     ` as any[];
 

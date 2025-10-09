@@ -2,9 +2,6 @@ import { requireUser } from '@lib/get-user';
 import { authorizenet } from '@lib/authorizenet';
 import { z } from 'zod';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 const checkoutSchema = z.object({
   plan: z.enum(['PRO', 'BUSINESS']),

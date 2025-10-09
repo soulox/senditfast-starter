@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@lib/db';
 import { authorizenet } from '@lib/authorizenet';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 export async function POST(req: NextRequest) {
   try {

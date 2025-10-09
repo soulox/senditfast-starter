@@ -1,9 +1,5 @@
 import { z } from 'zod';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-
 // Use mock B2 if MOCK_B2=true in env
 const useMock = process.env.MOCK_B2 === 'true';
 const { completeMultipartUpload } = useMock

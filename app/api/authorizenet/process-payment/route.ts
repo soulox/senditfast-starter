@@ -3,9 +3,6 @@ import { requireUser } from '@lib/get-user';
 import { sql } from '@lib/db';
 import { z } from 'zod';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 const paymentSchema = z.object({
   plan: z.enum(['PRO', 'BUSINESS']),

@@ -3,9 +3,6 @@ import { cleanupExpiredTransfers, getCleanupStats } from '@lib/cleanup';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@lib/auth';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 /**
  * GET /api/admin/cleanup - Get cleanup statistics

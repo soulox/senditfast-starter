@@ -3,9 +3,6 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { rateLimit, getRateLimitIdentifier, rateLimitResponse, RATE_LIMITS } from '@lib/rate-limit';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 const registerSchema = z.object({
   email: z.string().email(),

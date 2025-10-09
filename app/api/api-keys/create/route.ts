@@ -5,9 +5,6 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 const createKeySchema = z.object({
   name: z.string().min(1).max(100)

@@ -3,9 +3,6 @@ import { requireUser } from '@lib/get-user';
 import { sendTransferEmail } from '@lib/email';
 import { z } from 'zod';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 const notifySchema = z.object({
   recipients: z.array(z.string().email()),

@@ -8,9 +8,6 @@
     "ssl:generate": "node scripts/generate-ssl.js",
     "build": "next build",
     "start": "next start",
-    "deploy": "echo 'Build complete - Cloudflare Pages will automatically deploy'",
-    "pages:build": "npx @cloudflare/next-on-pages --experimental-minify",
-    "pages:preview": "npx wrangler pages dev .vercel/output/static --compatibility-date=2025-01-01",
     "migrate": "node scripts/migrate.js",
     "cleanup": "node scripts/cleanup-cron.js"
   },
@@ -36,7 +33,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.11.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.46",

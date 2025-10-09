@@ -4,9 +4,6 @@ import { sql } from '@lib/db';
 import speakeasy from 'speakeasy';
 import { z } from 'zod';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 
 const verifySchema = z.object({
   token: z.string().length(6)

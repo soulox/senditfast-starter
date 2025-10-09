@@ -10,9 +10,6 @@ export async function GET() {
       select id, slug, total_size_bytes, status, created_at, expires_at
       from transfer
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
       where owner_id = ${userId}
       order by created_at desc
       limit 50
