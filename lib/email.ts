@@ -1,16 +1,22 @@
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
 
-const mailgun = new Mailgun(formData);
-
-// Initialize Mailgun client
-const mg = mailgun.client({
-  username: 'api',
-  key: process.env.MAILGUN_API_KEY || '',
-});
-
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || '';
 const FROM_EMAIL = process.env.MAILGUN_FROM_EMAIL || 'noreply@senditfast.com';
+
+// Lazy initialization of Mailgun client to avoid build-time errors
+let mg: ReturnType<Mailgun['client']> | null = null;
+
+function getMailgunClient() {
+  if (!mg && process.env.MAILGUN_API_KEY) {
+    const mailgun = new Mailgun(formData);
+    mg = mailgun.client({
+      username: 'api',
+      key: process.env.MAILGUN_API_KEY,
+    });
+  }
+  return mg;
+}
 
 export async function sendTransferEmail({
   to,
@@ -177,7 +183,12 @@ Sent via SendItFast - Fast, secure file transfers
   `;
 
   try {
-    const result = await mg.messages.create(MAILGUN_DOMAIN, {
+    const client = getMailgunClient();
+    if (!client) {
+      throw new Error('Mailgun client not initialized');
+    }
+
+    const result = await client.messages.create(MAILGUN_DOMAIN, {
       from: `SendItFast <${FROM_EMAIL}>`,
       to: [to],
       subject: `📦 ${sender} sent you ${fileCount} file${fileCount > 1 ? 's' : ''} via SendItFast`,
@@ -301,7 +312,12 @@ Sent via SendItFast - Fast, secure file transfers
   `;
 
   try {
-    const result = await mg.messages.create(MAILGUN_DOMAIN, {
+    const client = getMailgunClient();
+    if (!client) {
+      throw new Error('Mailgun client not initialized');
+    }
+
+    const result = await client.messages.create(MAILGUN_DOMAIN, {
       from: `SendItFast <${FROM_EMAIL}>`,
       to: [to],
       subject: `👥 ${inviter} invited you to join their team on SendItFast`,
@@ -430,7 +446,12 @@ Sent via SendItFast - Fast, secure file transfers
   `;
 
   try {
-    const result = await mg.messages.create(MAILGUN_DOMAIN, {
+    const client = getMailgunClient();
+    if (!client) {
+      throw new Error('Mailgun client not initialized');
+    }
+
+    const result = await client.messages.create(MAILGUN_DOMAIN, {
       from: `SendItFast <${FROM_EMAIL}>`,
       to: [to],
       subject: `🔑 Reset your SendItFast password`,
