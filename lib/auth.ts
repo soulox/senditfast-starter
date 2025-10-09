@@ -4,9 +4,13 @@ import GoogleProvider from 'next-auth/providers/google';
 import { sql } from './db';
 import bcrypt from 'bcryptjs';
 
+// Handle .default exports for better compatibility
+const Credentials = (CredentialsProvider as any).default || CredentialsProvider;
+const Google = (GoogleProvider as any).default || GoogleProvider;
+
 export const authOptions: NextAuthOptions = {
   providers: [
-    CredentialsProvider({
+    Credentials({
       name: 'Email',
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -42,7 +46,7 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
-    GoogleProvider({
+    Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
