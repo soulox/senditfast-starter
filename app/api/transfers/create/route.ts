@@ -88,6 +88,7 @@ export async function POST(req: Request) {
         from transfer
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
         where owner_id = ${userId}
         and created_at >= ${startOfMonth.toISOString()}

@@ -4,6 +4,7 @@ import { sql } from '@lib/db';
 import { deleteFile } from '@lib/b2';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 export async function DELETE(req: NextRequest) {

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { rateLimit, getRateLimitIdentifier, rateLimitResponse, RATE_LIMITS } from '@lib/rate-limit';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 // Use mock B2 if MOCK_B2=true in env, otherwise use real B2

@@ -4,6 +4,7 @@ import { sendTransferEmail } from '@lib/email';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 const notifySchema = z.object({

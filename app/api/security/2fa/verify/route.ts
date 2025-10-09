@@ -5,6 +5,7 @@ import speakeasy from 'speakeasy';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 const verifySchema = z.object({

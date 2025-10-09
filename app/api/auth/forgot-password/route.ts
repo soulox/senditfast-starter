@@ -4,6 +4,7 @@ import { z } from 'zod';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 const forgotPasswordSchema = z.object({

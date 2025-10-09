@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 const createKeySchema = z.object({

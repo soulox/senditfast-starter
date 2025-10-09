@@ -11,6 +11,7 @@ export async function GET() {
       from transfer
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
       where owner_id = ${userId}
       order by created_at desc

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 const resetPasswordSchema = z.object({

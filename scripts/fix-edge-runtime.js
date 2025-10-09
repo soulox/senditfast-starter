@@ -55,6 +55,11 @@ const nodeJsRoutes = [
   
   // Upload (uses requireUser)
   'app/api/upload/parts/route.ts',
+  'app/api/upload/create/route.ts',
+  'app/api/upload/complete/route.ts',
+  
+  // Cron (uses B2 which requires DOMParser)
+  'app/api/cron/cleanup/route.ts',
 ];
 
 function updateRuntime(filePath, runtime) {
