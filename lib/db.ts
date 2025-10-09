@@ -5,27 +5,33 @@ import { neon } from '@neondatabase/serverless';
 // Lazy initialization to avoid build-time database connection
 let sqlInstance: ReturnType<typeof neon> | null = null;
 
-export const sql = new Proxy({} as ReturnType<typeof neon>, {
-  get(target, prop) {
-    if (!sqlInstance) {
-      if (!process.env.DATABASE_URL) {
-        // During build, DATABASE_URL might not be set
-        // Return a mock that won't actually execute
-        console.warn('[DB] DATABASE_URL not set, using mock');
-        return () => Promise.resolve([]);
-      }
-      sqlInstance = neon(process.env.DATABASE_URL);
+const ensureInstance = () => {
+  if (!sqlInstance) {
+    if (!process.env.DATABASE_URL) {
+      console.warn('[DB] DATABASE_URL not set, using mock');
+      return null;
     }
-    return (sqlInstance as any)[prop];
-  },
-  apply(target, thisArg, args) {
-    if (!sqlInstance) {
-      if (!process.env.DATABASE_URL) {
-        console.warn('[DB] DATABASE_URL not set, using mock');
-        return Promise.resolve([]);
-      }
-      sqlInstance = neon(process.env.DATABASE_URL);
-    }
-    return (sqlInstance as any)(...args);
+    sqlInstance = neon(process.env.DATABASE_URL);
   }
+  return sqlInstance;
+};
+
+const noop = ((..._args: any[]) => Promise.resolve([])) as unknown as ReturnType<typeof neon>;
+
+export const sql = new Proxy(noop, {
+  get(_target, prop) {
+    const instance = ensureInstance();
+    if (!instance) {
+      return () => Promise.resolve([]);
+    }
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+  apply(_target, _thisArg, args) {
+    const instance = ensureInstance();
+    if (!instance) {
+      return Promise.resolve([]);
+    }
+    return (instance as any)(...args);
+  },
 }) as ReturnType<typeof neon>;
