@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cleanupExpiredTransfers } from '@lib/cleanup';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic'; // Prevent static generation
-
-
 /**
  * Serverless cron job endpoint for cleaning up expired transfers
  * 
