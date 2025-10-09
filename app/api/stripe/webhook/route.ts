@@ -3,6 +3,16 @@ import { sql } from '@lib/db';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {
+  // Stripe webhooks are deprecated - using Authorize.Net instead
+  // This endpoint is kept for backwards compatibility only
+  
+  if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return new Response(
+      JSON.stringify({ error: 'Stripe is not configured. Using Authorize.Net for payments.' }),
+      { status: 400, headers: { 'content-type': 'application/json' } }
+    );
+  }
+
   const body = await req.text();
   const signature = req.headers.get('stripe-signature');
 
@@ -12,9 +22,6 @@ export async function POST(req: Request) {
 
   try {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    if (!webhookSecret) {
-      throw new Error('STRIPE_WEBHOOK_SECRET is not set');
-    }
 
     // Verify webhook signature
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
