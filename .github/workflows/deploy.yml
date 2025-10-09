@@ -1,0 +1,60 @@
+name: Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚀 Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            echo "🔄 Starting deployment..."
+            
+            # Navigate to app directory
+            cd /var/www/senditfast
+            
+            # Pull latest changes
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            pnpm install
+            
+            # Run migrations
+            echo "🗄️ Running database migrations..."
+            pnpm migrate || echo "⚠️ Migration failed or already applied"
+            
+            # Build application
+            echo "🔨 Building application..."
+            pnpm build
+            
+            # Restart PM2
+            echo "🔄 Restarting application..."
+            pm2 restart senditfast
+            
+            # Show status
+            echo "✅ Deployment complete!"
+            pm2 status
+            pm2 logs senditfast --lines 20 --nostream
+
+      - name: ✅ Deployment Status
+        if: success()
+        run: echo "Deployment completed successfully!"
+
+      - name: ❌ Deployment Failed
+        if: failure()
+        run: echo "Deployment failed - check logs above"
+

@@ -130,8 +130,8 @@ export async function sendTransferEmail({
               <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin: 20px 0;">
                 <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
                   ⚠️ <strong>Important:</strong> This link will expire on ${expiryDate}. Download your files before then!
-                </p>
-              </div>
+          </p>
+        </div>
 
               <!-- Link -->
               <p style="margin: 20px 0 0 0; font-size: 13px; color: #9ca3af; line-height: 1.5;">
@@ -398,8 +398,8 @@ export async function sendPasswordResetEmail({
               <div style="background: #fef3c7; border-radius: 8px; padding: 16px; margin: 20px 0;">
                 <p style="margin: 0; font-size: 14px; color: #92400e; line-height: 1.6;">
                   ⚠️ <strong>Security Notice:</strong> This link will expire in 1 hour. If you didn't request this reset, please ignore this email and your password will remain unchanged.
-                </p>
-              </div>
+          </p>
+        </div>
 
               <!-- Link -->
               <p style="margin: 20px 0 0 0; font-size: 13px; color: #9ca3af; line-height: 1.5;">
