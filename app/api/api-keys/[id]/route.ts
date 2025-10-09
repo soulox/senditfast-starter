@@ -27,7 +27,7 @@ export async function DELETE(
       SET revoked_at = NOW()
       WHERE id = ${keyId} AND user_id = ${userId} AND revoked_at IS NULL
       RETURNING id
-    `;
+    ` as any[];
 
     if (result.length === 0) {
       return NextResponse.json(
