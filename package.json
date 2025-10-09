@@ -8,6 +8,7 @@
     "ssl:generate": "node scripts/generate-ssl.js",
     "build": "next build",
     "start": "next start",
+    "deploy": "echo 'Build complete - Cloudflare Pages will automatically deploy'",
     "pages:build": "npx @cloudflare/next-on-pages --experimental-minify",
     "pages:preview": "npx wrangler pages dev .vercel/output/static --compatibility-date=2025-01-01",
     "migrate": "node scripts/migrate.js",
