@@ -1,6 +1,6 @@
-import { neon, neonConfig } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
 
-neonConfig.fetchConnectionCache = true;
+// Note: fetchConnectionCache is now always true by default (deprecated option)
 
 // Lazy initialization to avoid build-time database connection
 let sqlInstance: ReturnType<typeof neon> | null = null;
