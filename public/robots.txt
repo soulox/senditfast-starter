@@ -1,0 +1,36 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow authentication and API routes
+Disallow: /api/
+Disallow: /auth/
+Disallow: /admin/
+Disallow: /dashboard/
+
+# Disallow share links (user content)
+Disallow: /share/
+
+# Allow specific public pages
+Allow: /
+Allow: /pricing
+Allow: /about
+Allow: /use-cases
+Allow: /api-docs
+Allow: /faq
+Allow: /help
+Allow: /legal
+Allow: /privacy
+
+# Sitemap
+Sitemap: https://senditfast.net/sitemap.xml
+
+# Crawl delay (optional)
+# Crawl-delay: 10
+
+# Block bad bots
+User-agent: SemrushBot
+User-agent: AhrefsBot
+User-agent: DotBot
+Crawl-delay: 10
+

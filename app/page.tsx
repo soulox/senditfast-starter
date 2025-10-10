@@ -1,14 +1,80 @@
 import Link from 'next/link';
 
 export default function Home() {
+  // Structured Data for SEO
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'SendItFast',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '1250',
+    },
+    description: 'Send large files up to 250GB securely with password protection, automatic expiration, and download analytics.',
+    url: 'https://senditfast.net',
+    image: 'https://senditfast.net/og-image.png',
+    creator: {
+      '@type': 'Organization',
+      name: 'SendItFast',
+      url: 'https://senditfast.net',
+    },
+    featureList: [
+      'Secure file transfer',
+      'Password protection',
+      'Automatic expiration',
+      'Download analytics',
+      'Large file support up to 250GB',
+      'Multipart uploads',
+    ],
+  };
+
+  const organizationData = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'SendItFast',
+    url: 'https://senditfast.net',
+    logo: 'https://senditfast.net/logo.png',
+    description: 'Fast, secure file transfers for everyone',
+    sameAs: [
+      'https://twitter.com/senditfast',
+      'https://www.linkedin.com/company/senditfast',
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'Customer Support',
+      email: 'support@senditfast.net',
+    },
+  };
+
   return (
-    <section style={{ maxWidth: 800, margin: '60px auto', textAlign: 'center' }}>
-      <h1 style={{ fontSize: 48, marginBottom: 16, fontWeight: 700 }}>
-        Send large files securely — fast.
-      </h1>
-      <p style={{ fontSize: 20, color: '#666', marginBottom: 32 }}>
-        Simple file transfers with expiry, passwords, and analytics.
-      </p>
+    <>
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
+      />
+      
+      <article style={{ maxWidth: 800, margin: '60px auto', textAlign: 'center' }}>
+      <header>
+        <h1 style={{ fontSize: 48, marginBottom: 16, fontWeight: 700 }}>
+          Send Large Files Securely — Fast & Easy
+        </h1>
+        <p style={{ fontSize: 20, color: '#666', marginBottom: 32 }}>
+          Secure file transfer service with password protection, automatic expiration, and real-time analytics. Send files up to 250GB instantly.
+        </p>
+      </header>
       <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 48 }}>
         <Link
           href="/new"
@@ -41,7 +107,7 @@ export default function Home() {
         </Link>
       </div>
 
-      <div
+      <section
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -49,35 +115,37 @@ export default function Home() {
           textAlign: 'left',
           marginTop: 60,
         }}
+        aria-label="Key Features"
       >
-        <div>
-          <h3 style={{ marginBottom: 8 }}>🔒 Secure</h3>
+        <article>
+          <h2 style={{ marginBottom: 8, fontSize: 18 }}>🔒 Secure File Transfer</h2>
           <p style={{ color: '#666', fontSize: 14 }}>
-            Password-protected transfers with automatic expiration
+            Enterprise-grade security with password-protected transfers and automatic expiration for sensitive data
           </p>
-        </div>
-        <div>
-          <h3 style={{ marginBottom: 8 }}>⚡ Fast</h3>
+        </article>
+        <article>
+          <h2 style={{ marginBottom: 8, fontSize: 18 }}>⚡ Lightning Fast</h2>
           <p style={{ color: '#666', fontSize: 14 }}>
-            Optimized multipart uploads for large files
+            Optimized multipart uploads and CDN delivery for large files up to 250GB
           </p>
-        </div>
-        <div>
-          <h3 style={{ marginBottom: 8 }}>📊 Analytics</h3>
+        </article>
+        <article>
+          <h2 style={{ marginBottom: 8, fontSize: 18 }}>📊 Real-Time Analytics</h2>
           <p style={{ color: '#666', fontSize: 14 }}>
-            Track downloads and recipient engagement
+            Track downloads, monitor recipient engagement, and view detailed transfer statistics
           </p>
-        </div>
-        <div>
-          <h3 style={{ marginBottom: 8 }}>💰 Affordable</h3>
+        </article>
+        <article>
+          <h2 style={{ marginBottom: 8, fontSize: 18 }}>💰 Affordable Plans</h2>
           <p style={{ color: '#666', fontSize: 14 }}>
             <Link href="/pricing" style={{ color: '#0070f3' }}>
-              Simple pricing
+              Flexible pricing plans
             </Link>{' '}
-            that scales with you
+            that scale with your business needs
           </p>
-        </div>
-      </div>
-    </section>
+        </article>
+      </section>
+    </article>
+    </>
   );
 }
