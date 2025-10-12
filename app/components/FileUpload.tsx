@@ -179,7 +179,7 @@ export default function FileUpload() {
         }
 
         // Update progress
-        const progress = ((i + 1) / totalParts) * 100;
+        const progress = Math.min(100, Math.round(((i + 1) / totalParts) * 100));
         setFiles((prev) => {
           const updated = [...prev];
           updated[index] = { ...updated[index], progress };
@@ -551,7 +551,7 @@ export default function FileUpload() {
                       style={{
                         height: '100%',
                         backgroundColor: fileWithProgress.error ? '#f44' : '#0070f3',
-                        width: `${fileWithProgress.progress}%`,
+                        width: `${Math.min(100, Math.max(0, Math.round(fileWithProgress.progress)))}%`,
                         transition: 'width 0.3s',
                       }}
                     />

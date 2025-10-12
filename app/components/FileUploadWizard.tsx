@@ -156,7 +156,7 @@ export default function FileUploadWizard() {
           parts.push({ PartNumber: i + 1, ETag: etag });
         }
 
-        const progress = ((i + 1) / totalParts) * 100;
+        const progress = Math.min(100, Math.round(((i + 1) / totalParts) * 100));
         setFiles((prev) => {
           const updated = [...prev];
           updated[index] = { ...updated[index], progress };
@@ -616,7 +616,7 @@ export default function FileUploadWizard() {
                       {f.file.name}
                     </div>
                     <div style={{ fontSize: '14px', color: '#6b7280', fontWeight: '600' }}>
-                      {f.progress}%
+                      {Math.round(f.progress)}%
                     </div>
                   </div>
                   <div style={{
@@ -627,7 +627,7 @@ export default function FileUploadWizard() {
                     overflow: 'hidden'
                   }}>
                     <div style={{
-                      width: `${f.progress}%`,
+                      width: `${Math.min(100, Math.max(0, Math.round(f.progress)))}%`,
                       height: '100%',
                       backgroundColor: f.error ? '#ef4444' : '#667eea',
                       transition: 'width 0.3s ease'

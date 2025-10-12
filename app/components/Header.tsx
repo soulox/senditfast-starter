@@ -1,10 +1,20 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Header() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+
+  // Hide header on auth pages
+  if (pathname?.startsWith('/auth/')) {
+    return null;
+  }
+
+  // Check if we're on superadmin pages
+  const isSuperAdminPage = pathname?.startsWith('/superadmin');
 
   return (
     <header
@@ -70,34 +80,38 @@ export default function Header() {
           <span style={{ color: '#9ca3af', fontSize: 14 }}>Loading...</span>
         ) : session ? (
           <>
-            <Link 
-              href="/new" 
-              style={{ 
-                color: '#667eea', 
-                textDecoration: 'none',
-                fontSize: '15px',
-                fontWeight: '600',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
-            >
-              New Transfer
-            </Link>
-            <Link
-              href="/dashboard"
-              style={{
-                color: '#667eea',
-                textDecoration: 'none',
-                fontSize: '15px',
-                fontWeight: '600',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
-            >
-              Dashboard
-            </Link>
+            {!isSuperAdminPage && (
+              <>
+                <Link 
+                  href="/new" 
+                  style={{ 
+                    color: '#667eea', 
+                    textDecoration: 'none',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
+                >
+                  New Transfer
+                </Link>
+                <Link
+                  href="/dashboard"
+                  style={{
+                    color: '#667eea',
+                    textDecoration: 'none',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
+                >
+                  Dashboard
+                </Link>
+              </>
+            )}
             {(session.user as any)?.plan === 'BUSINESS' && (
               <>
                 <Link
@@ -144,34 +158,38 @@ export default function Header() {
                 </Link>
               </>
             )}
-            <Link
-              href="/admin"
-              style={{
-                color: '#667eea',
-                textDecoration: 'none',
-                fontSize: '15px',
-                fontWeight: '600',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
-            >
-              ⚙️ Settings
-            </Link>
-            <Link
-              href="/pricing"
-              style={{
-                color: '#667eea',
-                textDecoration: 'none',
-                fontSize: '15px',
-                fontWeight: '600',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
-            >
-              Pricing
-            </Link>
+            {!isSuperAdminPage && (
+              <>
+                <Link
+                  href="/admin"
+                  style={{
+                    color: '#667eea',
+                    textDecoration: 'none',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
+                >
+                  ⚙️ Settings
+                </Link>
+                <Link
+                  href="/pricing"
+                  style={{
+                    color: '#667eea',
+                    textDecoration: 'none',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
+                >
+                  Pricing
+                </Link>
+              </>
+            )}
             <div style={{
               display: 'flex',
               alignItems: 'center',

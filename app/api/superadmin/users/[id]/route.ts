@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSuperAdmin, hasPermission, logAdminAction } from '@/lib/superadmin-auth';
-import { sql } from '@/lib/db';
+import { requireSuperAdmin, hasPermission, logAdminAction } from '@lib/superadmin-auth';
+import { sql } from '@lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +17,14 @@ export async function GET(
 
   try {
     const [user] = await sql`
-      SELECT * FROM admin_user_overview WHERE id = ${params.id}
+      SELECT 
+        u.id, u.email, u.name, u.plan, u.role, u.created_at,
+        COUNT(DISTINCT t.id) as total_transfers,
+        COALESCE(SUM(t.total_size_bytes), 0) as total_size_transferred
+      FROM app_user u
+      LEFT JOIN transfer t ON u.id = t.owner_id
+      WHERE u.id = ${params.id}
+      GROUP BY u.id, u.email, u.name, u.plan, u.role, u.created_at
     ` as any[];
 
     if (!user) {
@@ -34,13 +41,18 @@ export async function GET(
     ` as any[];
 
     // Get user's monthly usage
-    const usage = await sql`
-      SELECT month, transfers_count, total_size_bytes, total_downloads
-      FROM user_usage_stats
-      WHERE user_id = ${params.id}
-      ORDER BY month DESC
-      LIMIT 12
-    ` as any[];
+    let usage: any[] = [];
+    try {
+      usage = await sql`
+        SELECT month, transfers_count, total_size_bytes, total_downloads
+        FROM user_usage_stats
+        WHERE user_id = ${params.id}
+        ORDER BY month DESC
+        LIMIT 12
+      ` as any[];
+    } catch (_) {
+      usage = [];
+    }
 
     return NextResponse.json({
       success: true,
@@ -72,7 +84,16 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { plan, role, name, email } = body;
+    const { plan, role, name, email, is_blocked } = body;
+
+    // Fetch target user role to protect SUPER_ADMIN accounts from blocking
+    const [target] = await sql`
+      SELECT role FROM app_user WHERE id = ${params.id}
+    ` as any[];
+
+    if (target?.role === 'SUPER_ADMIN' && typeof is_blocked === 'boolean') {
+      return NextResponse.json({ error: 'Cannot block a superadmin user' }, { status: 400 });
+    }
 
     // Build update query dynamically
     let updates: string[] = [];
@@ -100,20 +121,25 @@ export async function PATCH(
       values.push(email);
     }
 
+    if (typeof is_blocked === 'boolean') {
+      updates.push(`is_blocked = $${paramIndex++}`);
+      values.push(is_blocked);
+    }
+
     if (updates.length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
     values.push(params.id);
 
-    const updateQuery = `
+    // Perform update using a parameterized dynamic statement fallback
+    const fields = updates.join(', ');
+    const [updatedUser] = await sql`
       UPDATE app_user
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING id, email, name, plan, role
-    `;
-
-    const [updatedUser] = await sql.unsafe(updateQuery, values) as any[];
+      SET ${sql.raw(fields)}
+      WHERE id = ${params.id}
+      RETURNING id, email, name, plan, role, is_blocked
+    ` as any[];
 
     if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -165,11 +191,15 @@ export async function DELETE(
 
     // Get user info before deletion
     const [user] = await sql`
-      SELECT email, name FROM app_user WHERE id = ${params.id}
+      SELECT email, name, role FROM app_user WHERE id = ${params.id}
     ` as any[];
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (user.role === 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Cannot delete a superadmin user' }, { status: 400 });
     }
 
     // Delete user (CASCADE will handle related records)

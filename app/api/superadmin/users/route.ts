@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSuperAdmin, hasPermission } from '@/lib/superadmin-auth';
-import { sql } from '@/lib/db';
+import { requireSuperAdmin, hasPermission } from '@lib/superadmin-auth';
+import { sql } from '@lib/db';
 
 export async function GET(request: NextRequest) {
   // Verify super admin access
@@ -27,43 +27,104 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    // Build WHERE clause
-    let whereConditions = [];
-    let params: any[] = [];
-    
-    if (search) {
-      whereConditions.push(`(email ILIKE $${params.length + 1} OR name ILIKE $${params.length + 1})`);
-      params.push(`%${search}%`);
+    // Exclude superadmin accounts globally
+    const excludeRoles = ['SUPER_ADMIN'];
+
+    // Get total count with filters
+    let countResult;
+    if (search && plan) {
+      const searchPattern = `%${search}%`;
+      countResult = await sql`
+        SELECT COUNT(*) as total
+        FROM app_user
+        WHERE role <> 'SUPER_ADMIN' AND (email ILIKE ${searchPattern} OR name ILIKE ${searchPattern})
+          AND plan = ${plan}
+      `;
+    } else if (search) {
+      const searchPattern = `%${search}%`;
+      countResult = await sql`
+        SELECT COUNT(*) as total
+        FROM app_user
+        WHERE role <> 'SUPER_ADMIN' AND (email ILIKE ${searchPattern} OR name ILIKE ${searchPattern})
+      `;
+    } else if (plan) {
+      countResult = await sql`
+        SELECT COUNT(*) as total
+        FROM app_user
+        WHERE role <> 'SUPER_ADMIN' AND plan = ${plan}
+      `;
+    } else {
+      countResult = await sql`
+        SELECT COUNT(*) as total
+        FROM app_user
+        WHERE role <> 'SUPER_ADMIN'
+      `;
     }
     
-    if (plan) {
-      whereConditions.push(`plan = $${params.length + 1}`);
-      params.push(plan);
+    const total = countResult[0]?.total || 0;
+
+    // Get users with pagination - use simpler query from app_user table directly
+    let users;
+    if (search && plan) {
+      const searchPattern = `%${search}%`;
+      users = await sql`
+        SELECT 
+          u.id, u.email, u.name, u.plan, u.role, u.created_at,
+          COUNT(DISTINCT t.id) as total_transfers,
+          COALESCE(SUM(t.total_size_bytes), 0) as total_size_transferred,
+          COALESCE(SUM(t.total_size_bytes), 0) as storage_used_bytes
+        FROM app_user u
+        LEFT JOIN transfer t ON u.id = t.owner_id
+        WHERE u.role <> 'SUPER_ADMIN' AND (u.email ILIKE ${searchPattern} OR u.name ILIKE ${searchPattern})
+          AND u.plan = ${plan}
+        GROUP BY u.id, u.email, u.name, u.plan, u.role, u.created_at
+        ORDER BY u.created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+    } else if (search) {
+      const searchPattern = `%${search}%`;
+      users = await sql`
+        SELECT 
+          u.id, u.email, u.name, u.plan, u.role, u.created_at,
+          COUNT(DISTINCT t.id) as total_transfers,
+          COALESCE(SUM(t.total_size_bytes), 0) as total_size_transferred,
+          COALESCE(SUM(t.total_size_bytes), 0) as storage_used_bytes
+        FROM app_user u
+        LEFT JOIN transfer t ON u.id = t.owner_id
+        WHERE u.role <> 'SUPER_ADMIN' AND (u.email ILIKE ${searchPattern} OR u.name ILIKE ${searchPattern})
+        GROUP BY u.id, u.email, u.name, u.plan, u.role, u.created_at
+        ORDER BY u.created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+    } else if (plan) {
+      users = await sql`
+        SELECT 
+          u.id, u.email, u.name, u.plan, u.role, u.created_at,
+          COUNT(DISTINCT t.id) as total_transfers,
+          COALESCE(SUM(t.total_size_bytes), 0) as total_size_transferred,
+          COALESCE(SUM(t.total_size_bytes), 0) as storage_used_bytes
+        FROM app_user u
+        LEFT JOIN transfer t ON u.id = t.owner_id
+        WHERE u.role <> 'SUPER_ADMIN' AND u.plan = ${plan}
+        GROUP BY u.id, u.email, u.name, u.plan, u.role, u.created_at
+        ORDER BY u.created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+    } else {
+      users = await sql`
+        SELECT 
+          u.id, u.email, u.name, u.plan, u.role, u.created_at,
+          COUNT(DISTINCT t.id) as total_transfers,
+          COALESCE(SUM(t.total_size_bytes), 0) as total_size_transferred,
+          COALESCE(SUM(t.total_size_bytes), 0) as storage_used_bytes
+        FROM app_user u
+        LEFT JOIN transfer t ON u.id = t.owner_id
+        WHERE u.role <> 'SUPER_ADMIN'
+        GROUP BY u.id, u.email, u.name, u.plan, u.role, u.created_at
+        ORDER BY u.created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
     }
-
-    const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(' AND ')}` 
-      : '';
-
-    // Get total count
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM app_user
-      ${whereClause}
-    `;
-    
-    const [{ total }] = await sql.unsafe(countQuery, params) as any[];
-
-    // Get users with pagination
-    const usersQuery = `
-      SELECT *
-      FROM admin_user_overview
-      ${whereClause}
-      ORDER BY ${sortBy} ${sortOrder.toUpperCase()}
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-    `;
-    
-    const users = await sql.unsafe(usersQuery, [...params, limit, offset]) as any[];
 
     return NextResponse.json({
       success: true,

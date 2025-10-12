@@ -45,10 +45,11 @@ export function middleware(request: NextRequest) {
 
   // SECURITY RULE 3: Block non-admin routes on admin subdomain (optional)
   if (isAdminSubdomain && !isSuperAdminRoute) {
-    // Allow static assets and API routes
+    // Allow static assets, API routes, and auth pages
     if (
       pathname.startsWith('/_next') ||
       pathname.startsWith('/api/auth') ||
+      pathname.startsWith('/auth') ||
       pathname.startsWith('/favicon') ||
       pathname.includes('.')
     ) {

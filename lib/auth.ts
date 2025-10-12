@@ -17,14 +17,23 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Ensure block column exists
+        try {
+          await sql`ALTER TABLE app_user ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT false`;
+        } catch (_) {}
+
         const [user] = await sql`
-          select id, email, name, password_hash, plan
+          select id, email, name, password_hash, plan, is_blocked
           from app_user
           where email = ${credentials.email}
           limit 1
         ` as any[];
 
         if (!user) {
+          return null;
+        }
+
+        if (user.is_blocked) {
           return null;
         }
 
@@ -49,10 +58,14 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      // Ensure block column exists
+      try {
+        await sql`ALTER TABLE app_user ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT false`;
+      } catch (_) {}
       if (account?.provider === 'google') {
         // Check if user exists in our database
         const [existingUser] = await sql`
-          select id, email, name, plan
+          select id, email, name, plan, is_blocked
           from app_user
           where email = ${user.email}
           limit 1
@@ -69,6 +82,9 @@ export const authOptions: NextAuthOptions = {
           user.id = newUser.id;
           (user as any).plan = newUser.plan;
         } else {
+          if (existingUser.is_blocked) {
+            return false;
+          }
           user.id = existingUser.id;
           (user as any).plan = existingUser.plan;
         }

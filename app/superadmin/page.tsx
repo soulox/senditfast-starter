@@ -44,16 +44,20 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
+      setLoading(false);
       router.push('/auth/signin?callbackUrl=/superadmin');
-    } else if (status === 'authenticated') {
+      return;
+    }
+    
+    if (status === 'authenticated') {
       fetchStats();
       fetchUsers();
     }
-  }, [status, currentPage, selectedPlanFilter, searchTerm]);
+  }, [status, router, currentPage, selectedPlanFilter, searchTerm]);
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/superadmin/stats');
+      const response = await fetch(`/api/superadmin/stats?ts=${Date.now()}` as any, { cache: 'no-store' } as any);
       const data = await response.json();
       
       if (data.success) {
@@ -78,7 +82,7 @@ export default function SuperAdminDashboard() {
         ...(selectedPlanFilter && { plan: selectedPlanFilter }),
       });
 
-      const response = await fetch(`/api/superadmin/users?${params}`);
+      const response = await fetch(`/api/superadmin/users?${params.toString()}&ts=${Date.now()}` as any, { cache: 'no-store' } as any);
       const data = await response.json();
       
       if (data.success) {
@@ -119,12 +123,14 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B';
+  const formatBytes = (value: number | string | null | undefined) => {
+    const bytes = typeof value === 'string' ? parseInt(value, 10) : (typeof value === 'number' ? value : 0);
+    if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    const normalized = bytes / Math.pow(k, i);
+    return `${Math.round(normalized * 100) / 100} ${sizes[i] ?? 'B'}`;
   };
 
   const formatDate = (dateString: string | null) => {
@@ -142,6 +148,17 @@ export default function SuperAdminDashboard() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚙️</div>
           <div>Loading Super Admin Panel...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔐</div>
+          <div>Redirecting to sign in...</div>
         </div>
       </div>
     );
@@ -274,6 +291,100 @@ export default function SuperAdminDashboard() {
               subtitle="Total across all users"
             />
           </div>
+
+          {/* Change Password (visible only to superadmin) */}
+          <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, padding: 20, marginBottom: 24 }}>
+            <h3 style={{ marginTop: 0 }}>Change Password</h3>
+            <form onSubmit={async (e: any) => {
+              e.preventDefault();
+              const currentPassword = e.currentTarget.currentPassword.value;
+              const newPassword = e.currentTarget.newPassword.value;
+              if (!currentPassword || !newPassword) return;
+              try {
+                const res = await fetch('/api/superadmin/change-password', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ currentPassword, newPassword }),
+                });
+                const j = await res.json();
+                if (!res.ok) {
+                  alert(j.error || 'Failed to change password');
+                } else {
+                  (e.currentTarget as HTMLFormElement).reset();
+                  alert('Password updated');
+                }
+              } catch (_) {
+                alert('Failed to change password');
+              }
+            }}>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <input name="currentPassword" type="password" placeholder="Current password" style={{ padding: '10px 16px', border: '1px solid #d1d5db', borderRadius: 8, minWidth: 220 }} />
+                <input name="newPassword" type="password" placeholder="New password (min 8)" style={{ padding: '10px 16px', border: '1px solid #d1d5db', borderRadius: 8, minWidth: 220 }} />
+                <button type="submit" style={{ padding: '10px 20px', background: '#667eea', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600 }}>Update</button>
+              </div>
+            </form>
+          </div>
+
+          {/* Breakdown Tables */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: 16, fontWeight: 700, borderBottom: '1px solid #e5e7eb' }}>Storage by User (Top 50)</div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: 12 }}>User</th>
+                      <th style={{ textAlign: 'left', padding: 12 }}>Plan</th>
+                      <th style={{ textAlign: 'left', padding: 12 }}>Storage</th>
+                      <th style={{ textAlign: 'left', padding: 12 }}>Transfers</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(stats as any).storageByUser?.map((u: any) => (
+                      <tr key={u.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                        <td style={{ padding: 12 }}>
+                          <div style={{ fontWeight: 600 }}>{u.name || 'N/A'}</div>
+                          <div style={{ color: '#6b7280', fontSize: 12 }}>{u.email}</div>
+                        </td>
+                        <td style={{ padding: 12 }}>{u.plan}</td>
+                        <td style={{ padding: 12 }}>{formatBytes(u.storage_bytes)}</td>
+                        <td style={{ padding: 12 }}>{u.transfers_count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: 16, fontWeight: 700, borderBottom: '1px solid #e5e7eb' }}>Transfers by User (Top 50)</div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: 12 }}>User</th>
+                      <th style={{ textAlign: 'left', padding: 12 }}>Plan</th>
+                      <th style={{ textAlign: 'left', padding: 12 }}>Transfers</th>
+                      <th style={{ textAlign: 'left', padding: 12 }}>Total Size</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(stats as any).transfersByUser?.map((u: any) => (
+                      <tr key={u.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                        <td style={{ padding: 12 }}>
+                          <div style={{ fontWeight: 600 }}>{u.name || 'N/A'}</div>
+                          <div style={{ color: '#6b7280', fontSize: 12 }}>{u.email}</div>
+                        </td>
+                        <td style={{ padding: 12 }}>{u.plan}</td>
+                        <td style={{ padding: 12 }}>{u.transfers_count}</td>
+                        <td style={{ padding: 12 }}>{formatBytes(u.total_bytes)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -306,6 +417,7 @@ export default function SuperAdminDashboard() {
               <select
                 value={selectedPlanFilter}
                 onChange={(e) => setSelectedPlanFilter(e.target.value)}
+                aria-label="Filter by plan"
                 style={{
                   padding: '10px 16px',
                   border: '1px solid #d1d5db',
@@ -384,6 +496,7 @@ export default function SuperAdminDashboard() {
                         <select
                           value={user.plan}
                           onChange={(e) => updateUserPlan(user.id, e.target.value)}
+                          aria-label={`Change plan for ${user.email}`}
                           style={{
                             padding: '6px 12px',
                             border: '1px solid #d1d5db',
@@ -408,21 +521,88 @@ export default function SuperAdminDashboard() {
                         {formatDate(user.created_at)}
                       </td>
                       <td style={{ padding: 16 }}>
-                        <button
-                          onClick={() => router.push(`/superadmin/users/${user.id}`)}
-                          style={{
-                            padding: '6px 12px',
-                            background: '#667eea',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 6,
-                            fontSize: 13,
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Details
-                        </button>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            onClick={() => router.push(`/superadmin/users/${user.id}`)}
+                            style={{
+                              padding: '6px 12px',
+                              background: '#667eea',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: 6,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Details
+                          </button>
+                          {(user as any).role !== 'SUPER_ADMIN' && (
+                          <button
+                            onClick={async () => {
+                              const confirmDelete = confirm('Delete this user? This cannot be undone.');
+                              if (!confirmDelete) return;
+                              try {
+                                const res = await fetch(`/api/superadmin/users/${user.id}`, { method: 'DELETE' });
+                                if (res.ok) {
+                                  fetchUsers();
+                                  alert('User deleted');
+                                } else {
+                                  const j = await res.json();
+                                  alert(j.error || 'Failed to delete user');
+                                }
+                              } catch (_) {
+                                alert('Failed to delete user');
+                              }
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              background: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: 6,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Delete
+                          </button>
+                          )}
+                          {(user as any).role !== 'SUPER_ADMIN' && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(`/api/superadmin/users/${user.id}`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ is_blocked: !(user as any).is_blocked })
+                                });
+                                if (res.ok) {
+                                  fetchUsers();
+                                } else {
+                                  const j = await res.json();
+                                  alert(j.error || 'Failed to update');
+                                }
+                              } catch (_) {
+                                alert('Failed to update user');
+                              }
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              background: '#6b7280',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: 6,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {(user as any).is_blocked ? 'Unblock' : 'Block'}
+                          </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

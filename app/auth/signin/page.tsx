@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -13,9 +13,20 @@ function SignInForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isAdminSubdomain, setIsAdminSubdomain] = useState(false);
   
   const callbackUrl = searchParams.get('callbackUrl');
   const showRedirectMessage = callbackUrl && callbackUrl !== '/';
+  
+  // Check if we're on admin subdomain for simplified login (client-side only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsAdminSubdomain(
+        window.location.hostname.startsWith('admin.') || 
+        window.location.hostname.startsWith('admin.localhost')
+      );
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,28 +159,15 @@ function SignInForm() {
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+            <label htmlFor="password" style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#374151',
               marginBottom: '8px'
             }}>
-              <label htmlFor="password" style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151'
-              }}>
-                Password
-              </label>
-              <Link href="/auth/forgot-password" style={{
-                fontSize: '14px',
-                color: '#8b5cf6',
-                textDecoration: 'none',
-                fontWeight: '500'
-              }}>
-                Forgot your password?
-              </Link>
-            </div>
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -261,127 +259,133 @@ function SignInForm() {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '24px'
-          }}>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              backgroundColor: '#e5e7eb'
-            }}></div>
-            <span style={{
-              padding: '0 16px',
-              fontSize: '14px',
-              color: '#9ca3af'
-            }}>OR</span>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              backgroundColor: '#e5e7eb'
-            }}></div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              style={{
-                width: '100%',
-                padding: '12px',
-                backgroundColor: 'white',
-                color: '#374151',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-            >
+          {!isAdminSubdomain && (
+            <>
               <div style={{
-                width: '20px',
-                height: '20px',
-                background: 'linear-gradient(45deg, #ea4335 25%, #fbbc05 25%, #fbbc05 50%, #34a853 50%, #34a853 75%, #4285f4 75%)',
-                borderRadius: '4px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '12px',
-                fontWeight: 'bold'
+                marginBottom: '24px'
               }}>
-                G
+                <div style={{
+                  flex: 1,
+                  height: '1px',
+                  backgroundColor: '#e5e7eb'
+                }}></div>
+                <span style={{
+                  padding: '0 16px',
+                  fontSize: '14px',
+                  color: '#9ca3af'
+                }}>OR</span>
+                <div style={{
+                  flex: 1,
+                  height: '1px',
+                  backgroundColor: '#e5e7eb'
+                }}></div>
               </div>
-              Sign in with Google
-            </button>
 
-            <button
-              type="button"
-              onClick={handlePasskeySignIn}
-              style={{
-                width: '100%',
-                padding: '12px',
-                backgroundColor: 'white',
-                color: '#374151',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-            >
-              Sign in with passkey
-            </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                >
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    background: 'linear-gradient(45deg, #ea4335 25%, #fbbc05 25%, #fbbc05 50%, #34a853 50%, #34a853 75%, #4285f4 75%)',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}>
+                    G
+                  </div>
+                  Sign in with Google
+                </button>
 
-            <button
-              type="button"
-              onClick={handleSSOSignIn}
-              style={{
-                width: '100%',
-                padding: '12px',
-                backgroundColor: 'white',
-                color: '#374151',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-            >
-              Sign in with SSO
-            </button>
-          </div>
+                <button
+                  type="button"
+                  onClick={handlePasskeySignIn}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                >
+                  Sign in with passkey
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSSOSignIn}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                >
+                  Sign in with SSO
+                </button>
+              </div>
+            </>
+          )}
         </form>
 
-        <p style={{
-          textAlign: 'center',
-          marginTop: '32px',
-          fontSize: '14px',
-          color: '#6b7280'
-        }}>
-          Don't have an account?{' '}
-          <Link href="/auth/signup" style={{
-            color: '#8b5cf6',
-            textDecoration: 'none',
-            fontWeight: '500'
+        {!isAdminSubdomain && (
+          <p style={{
+            textAlign: 'center',
+            marginTop: '32px',
+            fontSize: '14px',
+            color: '#6b7280'
           }}>
-            Sign up
-          </Link>
-        </p>
+            Don't have an account?{' '}
+            <Link href="/auth/signup" style={{
+              color: '#8b5cf6',
+              textDecoration: 'none',
+              fontWeight: '500'
+            }}>
+              Sign up
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );
