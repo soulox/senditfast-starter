@@ -35,9 +35,7 @@ export default function Header() {
         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" fill="white" fillOpacity="0.9"/>
-            <path d="M12 8V16M8 12H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" color="rgba(102, 126, 234, 1)"/>
-            <circle cx="12" cy="12" r="2" fill="rgba(102, 126, 234, 1)"/>
+            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="white" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
         <div>
@@ -254,6 +252,20 @@ export default function Header() {
           </>
         ) : (
           <>
+            <Link
+              href="/pricing"
+              style={{
+                color: '#667eea',
+                textDecoration: 'none',
+                fontSize: '15px',
+                fontWeight: '600',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
+            >
+              Pricing
+            </Link>
             <Link 
               href="/auth/signin" 
               style={{ 
@@ -290,7 +302,7 @@ export default function Header() {
                 e.currentTarget.style.boxShadow = '0 4px 6px rgba(102, 126, 234, 0.3)';
               }}
             >
-              Sign Up
+              Get Started
             </Link>
           </>
         )}

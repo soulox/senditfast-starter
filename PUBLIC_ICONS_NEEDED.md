@@ -26,6 +26,11 @@ You need to add these files to the `public/` directory:
 - Format: PNG
 - Purpose: iOS/Apple devices
 
+### 5. `public/icon-512x512.png`
+- Size: 512x512
+- Format: PNG
+- Purpose: PWA manifest, Android splash screens
+
 ## How to Create Icons
 
 ### Option 1: Use an Online Generator
