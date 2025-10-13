@@ -74,46 +74,41 @@ export async function PATCH(
     const body = await request.json();
     const { plan, role, name, email } = body;
 
-    // Build update query dynamically
-    let updates: string[] = [];
-    let values: any[] = [];
-    let paramIndex = 1;
-
+    // Build update object
+    const updates: any = {};
+    
     if (plan !== undefined) {
-      updates.push(`plan = $${paramIndex++}`);
-      values.push(plan);
+      updates.plan = plan;
     }
 
     if (role !== undefined && admin.role === 'SUPER_ADMIN') {
       // Only SUPER_ADMIN can change roles
-      updates.push(`role = $${paramIndex++}`);
-      values.push(role);
+      updates.role = role;
     }
 
     if (name !== undefined) {
-      updates.push(`name = $${paramIndex++}`);
-      values.push(name);
+      updates.name = name;
     }
 
     if (email !== undefined) {
-      updates.push(`email = $${paramIndex++}`);
-      values.push(email);
+      updates.email = email;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
-    values.push(params.id);
-
-    const updateQuery = `
-      UPDATE app_user
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
+    // Execute update - use COALESCE to only update provided fields
+    const [updatedUser] = await sql`
+      UPDATE app_user 
+      SET 
+        plan = COALESCE(${updates.plan || null}, plan),
+        role = COALESCE(${updates.role || null}, role),
+        name = COALESCE(${updates.name || null}, name),
+        email = COALESCE(${updates.email || null}, email)
+      WHERE id = ${params.id}
       RETURNING id, email, name, plan, role
-    `;
-
-    const [updatedUser] = await sql.unsafe(updateQuery, values) as any[];
+    ` as any[];
 
     if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

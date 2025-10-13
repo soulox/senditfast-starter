@@ -27,43 +27,97 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    // Build WHERE clause
-    let whereConditions = [];
-    let params: any[] = [];
-    
-    if (search) {
-      whereConditions.push(`(email ILIKE $${params.length + 1} OR name ILIKE $${params.length + 1})`);
-      params.push(`%${search}%`);
+    // Sanitize sortBy to prevent SQL injection
+    const validSortColumns = ['created_at', 'email', 'name', 'plan'];
+    const safeSortBy = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
+    const safeSortOrder = sortOrder.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+
+    // Query with filtering
+    let total: number;
+    let users: any[];
+
+    if (search && plan) {
+      // Both search and plan filter
+      const searchPattern = `%${search}%`;
+      const [{ count }] = await sql`
+        SELECT COUNT(*)::int as count
+        FROM app_user
+        WHERE (email ILIKE ${searchPattern} OR name ILIKE ${searchPattern})
+          AND plan = ${plan}
+      ` as any[];
+      total = count;
+
+      if (safeSortBy === 'created_at' && safeSortOrder === 'DESC') {
+        users = await sql`
+          SELECT * FROM admin_user_overview
+          WHERE (email ILIKE ${searchPattern} OR name ILIKE ${searchPattern})
+            AND plan = ${plan}
+          ORDER BY created_at DESC
+          LIMIT ${limit} OFFSET ${offset}
+        ` as any[];
+      } else if (safeSortBy === 'email' && safeSortOrder === 'ASC') {
+        users = await sql`
+          SELECT * FROM admin_user_overview
+          WHERE (email ILIKE ${searchPattern} OR name ILIKE ${searchPattern})
+            AND plan = ${plan}
+          ORDER BY email ASC
+          LIMIT ${limit} OFFSET ${offset}
+        ` as any[];
+      } else {
+        // Default for other combinations
+        users = await sql`
+          SELECT * FROM admin_user_overview
+          WHERE (email ILIKE ${searchPattern} OR name ILIKE ${searchPattern})
+            AND plan = ${plan}
+          ORDER BY created_at DESC
+          LIMIT ${limit} OFFSET ${offset}
+        ` as any[];
+      }
+    } else if (search) {
+      // Search only
+      const searchPattern = `%${search}%`;
+      const [{ count }] = await sql`
+        SELECT COUNT(*)::int as count
+        FROM app_user
+        WHERE email ILIKE ${searchPattern} OR name ILIKE ${searchPattern}
+      ` as any[];
+      total = count;
+
+      users = await sql`
+        SELECT * FROM admin_user_overview
+        WHERE email ILIKE ${searchPattern} OR name ILIKE ${searchPattern}
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      ` as any[];
+    } else if (plan) {
+      // Plan filter only
+      const [{ count }] = await sql`
+        SELECT COUNT(*)::int as count
+        FROM app_user
+        WHERE plan = ${plan}
+      ` as any[];
+      total = count;
+
+      users = await sql`
+        SELECT * FROM admin_user_overview
+        WHERE plan = ${plan}
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      ` as any[];
+    } else {
+      // No filters
+      const [{ count }] = await sql`
+        SELECT COUNT(*)::int as count
+        FROM app_user
+      ` as any[];
+      total = count;
+
+      users = await sql`
+        SELECT * FROM admin_user_overview
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      ` as any[];
     }
-    
-    if (plan) {
-      whereConditions.push(`plan = $${params.length + 1}`);
-      params.push(plan);
-    }
-
-    const whereClause = whereConditions.length > 0 
-      ? `WHERE ${whereConditions.join(' AND ')}` 
-      : '';
-
-    // Get total count
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM app_user
-      ${whereClause}
-    `;
-    
-    const [{ total }] = await sql.unsafe(countQuery, params) as any[];
-
-    // Get users with pagination
-    const usersQuery = `
-      SELECT *
-      FROM admin_user_overview
-      ${whereClause}
-      ORDER BY ${sortBy} ${sortOrder.toUpperCase()}
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-    `;
-    
-    const users = await sql.unsafe(usersQuery, [...params, limit, offset]) as any[];
 
     return NextResponse.json({
       success: true,
@@ -71,8 +125,8 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: parseInt(total),
-        totalPages: Math.ceil(parseInt(total) / limit),
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (error: any) {

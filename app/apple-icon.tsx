@@ -1,5 +1,9 @@
 import { ImageResponse } from 'next/og';
 
+// Skip static generation - generate at runtime
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // Image metadata
 export const size = {
   width: 180,
