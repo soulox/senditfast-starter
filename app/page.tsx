@@ -1,6 +1,19 @@
+'use client';
+
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  const handleSendFiles = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!session) {
+      e.preventDefault();
+      router.push('/auth/signup');
+    }
+  };
   // Structured Data for SEO
   const structuredData = {
     '@context': 'https://schema.org',
@@ -78,6 +91,7 @@ export default function Home() {
       <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 48 }}>
         <Link
           href="/new"
+          onClick={handleSendFiles}
           style={{
             padding: '14px 32px',
             backgroundColor: '#0070f3',
@@ -86,9 +100,11 @@ export default function Home() {
             borderRadius: 6,
             fontSize: 18,
             fontWeight: 500,
+            cursor: 'pointer',
           }}
+          title={!session ? 'Sign up required to send files' : 'Start sending files'}
         >
-          Send Files →
+          {session ? 'Send Files →' : 'Send Files (Sign Up) →'}
         </Link>
         <Link
           href="/dashboard"
