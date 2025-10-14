@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     `;
 
     // Send reset email
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://senditfast.net';
     const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
 
     // Import email function dynamically

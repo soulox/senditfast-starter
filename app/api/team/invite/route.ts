@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     console.log(`[Team] Invited ${email} to team of user ${userId}`);
 
     // Send invitation email
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://senditfast.net';
     const acceptUrl = `${baseUrl}/team/accept/${newMember.id}`;
     
     const { sendTeamInviteEmail } = await import('@lib/email');

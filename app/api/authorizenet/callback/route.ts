@@ -14,22 +14,25 @@ export async function GET(req: NextRequest) {
       console.log(`[Authorize.Net] Payment successful: Transaction ID ${transId}`);
       
       // Redirect to success page
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://senditfast.net';
       return NextResponse.redirect(
-        new URL('/dashboard?upgraded=true', process.env.NEXT_PUBLIC_BASE_URL || req.url)
+        new URL('/dashboard?upgraded=true', baseUrl)
       );
     } else {
       // Payment failed or cancelled
       console.log(`[Authorize.Net] Payment failed or cancelled: Response code ${responseCode}`);
       
       // Redirect to pricing page with error
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://senditfast.net';
       return NextResponse.redirect(
-        new URL('/pricing?error=payment_failed', process.env.NEXT_PUBLIC_BASE_URL || req.url)
+        new URL('/pricing?error=payment_failed', baseUrl)
       );
     }
   } catch (error) {
     console.error('[Authorize.Net Callback] Error:', error);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://senditfast.net';
     return NextResponse.redirect(
-      new URL('/pricing?error=callback_error', process.env.NEXT_PUBLIC_BASE_URL || req.url)
+      new URL('/pricing?error=callback_error', baseUrl)
     );
   }
 }

@@ -51,7 +51,7 @@ export async function sendTransferEmail({
   });
 
   // Add tracking parameters to URLs
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://senditfast.net';
   const trackingUrl = recipientId ? `${transferUrl}?r=${recipientId}` : transferUrl;
   const openTrackingUrl = recipientId ? `${baseUrl}/api/email/track/open/${recipientId}` : null;
 

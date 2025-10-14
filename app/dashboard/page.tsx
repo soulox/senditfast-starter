@@ -590,37 +590,66 @@ export default function Dashboard() {
                         View
                       </Link>
                     </div>
-                    <button
-                      onClick={() => confirmDelete(transfer.id)}
-                      disabled={deletingId === transfer.id}
-                      style={{
-                        width: '100%',
-                        padding: '10px 16px',
-                        backgroundColor: 'white',
-                        color: '#ef4444',
-                        border: '2px solid #ef4444',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: deletingId === transfer.id ? 'not-allowed' : 'pointer',
-                        transition: 'background-color 0.2s, color 0.2s',
-                        opacity: deletingId === transfer.id ? 0.6 : 1
-                      }}
-                      onMouseEnter={(e) => {
-                        if (deletingId !== transfer.id) {
-                          e.currentTarget.style.backgroundColor = '#ef4444';
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <Link
+                        href={`/share/${transfer.slug}`}
+                        style={{
+                          flex: 1,
+                          padding: '10px 16px',
+                          backgroundColor: 'white',
+                          color: '#10b981',
+                          border: '2px solid #10b981',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          textDecoration: 'none',
+                          textAlign: 'center',
+                          transition: 'background-color 0.2s, color 0.2s',
+                          display: 'block'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#10b981';
                           e.currentTarget.style.color = 'white';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (deletingId !== transfer.id) {
+                        }}
+                        onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = 'white';
-                          e.currentTarget.style.color = '#ef4444';
-                        }
-                      }}
-                    >
-                      {deletingId === transfer.id ? 'Deleting...' : '🗑️ Delete'}
-                    </button>
+                          e.currentTarget.style.color = '#10b981';
+                        }}
+                      >
+                        📧 Send Again
+                      </Link>
+                      <button
+                        onClick={() => confirmDelete(transfer.id)}
+                        disabled={deletingId === transfer.id}
+                        style={{
+                          flex: 1,
+                          padding: '10px 16px',
+                          backgroundColor: 'white',
+                          color: '#ef4444',
+                          border: '2px solid #ef4444',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: deletingId === transfer.id ? 'not-allowed' : 'pointer',
+                          transition: 'background-color 0.2s, color 0.2s',
+                          opacity: deletingId === transfer.id ? 0.6 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                          if (deletingId !== transfer.id) {
+                            e.currentTarget.style.backgroundColor = '#ef4444';
+                            e.currentTarget.style.color = 'white';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (deletingId !== transfer.id) {
+                            e.currentTarget.style.backgroundColor = 'white';
+                            e.currentTarget.style.color = '#ef4444';
+                          }
+                        }}
+                      >
+                        {deletingId === transfer.id ? 'Deleting...' : '🗑️ Delete'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -843,7 +872,7 @@ export default function Dashboard() {
               border: '2px solid #e5e7eb'
             }}>
               <QRCodeSVG
-                value={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000'}/share/${showQRCode}`}
+                value={`${process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://senditfast.net')}/share/${showQRCode}`}
                 size={256}
                 level="H"
                 includeMargin={false}

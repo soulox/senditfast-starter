@@ -12,7 +12,7 @@
 require('dotenv').config({ path: '.env.local' });
 
 async function runCleanup() {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXTAUTH_URL || process.env.BASE_URL || 'https://senditfast.net';
   
   console.log(`[CRON] Starting cleanup at ${new Date().toISOString()}`);
   console.log(`[CRON] Using base URL: ${baseUrl}`);

@@ -23,7 +23,7 @@ export default function ApiDocsPage() {
     return null;
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://senditfast.net';
 
   return (
     <div style={{

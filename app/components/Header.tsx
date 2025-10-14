@@ -156,20 +156,6 @@ export default function Header() {
             >
               ⚙️ Settings
             </Link>
-            <Link
-              href="/pricing"
-              style={{
-                color: '#667eea',
-                textDecoration: 'none',
-                fontSize: '15px',
-                fontWeight: '600',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
-            >
-              Pricing
-            </Link>
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -221,7 +207,7 @@ export default function Header() {
               </div>
               <button
                 onClick={() => {
-                  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000';
+                  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://senditfast.net');
                   signOut({ callbackUrl: baseUrl });
                 }}
                 style={{

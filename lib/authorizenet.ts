@@ -67,7 +67,7 @@ export class AuthorizeNetClient {
   }) {
     const { amount, plan, customerEmail, userId } = params;
 
-    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || 'https://senditfast.net';
     
     // Ensure URL starts with http:// or https://
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {

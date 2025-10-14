@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 type FileInfo = {
   id: string;
@@ -11,6 +11,7 @@ type FileInfo = {
 };
 
 type TransferMeta = {
+  id: string;
   slug: string;
   expires_at: string;
   requires_password: boolean;
@@ -25,12 +26,17 @@ type TransferMeta = {
 
 export default function SharePage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
   const [meta, setMeta] = useState<TransferMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<FileInfo | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showNotifyForm, setShowNotifyForm] = useState(true); // Show by default
+  const [notifyEmails, setNotifyEmails] = useState('');
+  const [sendingNotification, setSendingNotification] = useState(false);
+  const [notificationSent, setNotificationSent] = useState(false);
 
   // Branding colors
   const primaryColor = meta?.branding?.primary_color || '#667eea';
@@ -116,6 +122,57 @@ export default function SharePage() {
       alert('Failed to download file');
     } finally {
       setDownloading(null);
+    }
+  };
+
+  const handleSendNotification = async () => {
+    if (!notifyEmails.trim()) {
+      alert('Please enter at least one email address');
+      return;
+    }
+
+    if (!meta?.id) {
+      alert('Transfer information not loaded yet');
+      return;
+    }
+
+    setSendingNotification(true);
+    try {
+      // Parse emails (comma or newline separated)
+      const emails = notifyEmails
+        .split(/[,\n]/)
+        .map(e => e.trim())
+        .filter(e => e && e.includes('@'));
+
+      if (emails.length === 0) {
+        alert('Please enter at least one valid email address');
+        setSendingNotification(false);
+        return;
+      }
+
+      const res = await fetch(`/api/transfers/${meta.id}/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipients: emails }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to send notifications');
+      }
+
+      setNotificationSent(true);
+      setNotifyEmails('');
+      
+      // Redirect to dashboard after 2 seconds
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
+    } catch (error: any) {
+      console.error('Notification error:', error);
+      alert(error.message || 'Failed to send notifications');
+    } finally {
+      setSendingNotification(false);
     }
   };
 
@@ -214,7 +271,7 @@ export default function SharePage() {
           </p>
         </div>
 
-        {meta.requires_password && (
+      {meta.requires_password && (
           <div style={{
             background: '#fef3c7',
             border: '2px solid #f59e0b',
@@ -227,6 +284,144 @@ export default function SharePage() {
               🔒 This transfer is password-protected
             </p>
           </div>
+        )}
+
+        {/* Send Notification Form */}
+        {showNotifyForm && (
+          <div style={{
+            background: 'white',
+            borderRadius: 12,
+            padding: 32,
+            marginBottom: 24,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16
+            }}>
+              <h2 style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: '#1f2937',
+                margin: 0
+              }}>
+                📧 Send Files to Recipients
+              </h2>
+              <button
+                onClick={() => setShowNotifyForm(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: 24,
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <p style={{
+              fontSize: 15,
+              color: '#6b7280',
+              marginBottom: 20
+            }}>
+              Enter email addresses of people you want to notify about this transfer. They will receive an email with a download link.
+            </p>
+            {notificationSent ? (
+              <div style={{
+                background: '#d1fae5',
+                border: '2px solid #10b981',
+                borderRadius: 8,
+                padding: 16,
+                textAlign: 'center'
+              }}>
+                <p style={{ color: '#065f46', margin: 0, fontWeight: 600 }}>
+                  ✓ Notifications sent successfully!
+                </p>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  value={notifyEmails}
+                  onChange={(e) => setNotifyEmails(e.target.value)}
+                  placeholder="Enter email addresses (comma or newline separated)&#10;example@email.com, another@email.com"
+                  style={{
+                    width: '100%',
+                    minHeight: 120,
+                    padding: 12,
+                    border: '2px solid #e5e7eb',
+                    borderRadius: 8,
+                    fontSize: 15,
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    marginBottom: 16
+                  }}
+                />
+                <button
+                  onClick={handleSendNotification}
+                  disabled={sendingNotification}
+                  style={{
+                    width: '100%',
+                    padding: '14px 24px',
+                    background: sendingNotification ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: sendingNotification ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                    transition: 'transform 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!sendingNotification) {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!sendingNotification) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }
+                  }}
+                >
+                  {sendingNotification ? 'Sending...' : '📧 Send Notifications'}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Toggle Notify Form Button (if form is hidden) */}
+        {!showNotifyForm && (
+          <button
+            onClick={() => setShowNotifyForm(true)}
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              background: 'white',
+              color: '#10b981',
+              border: '2px solid #10b981',
+              borderRadius: 8,
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginBottom: 24,
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#10b981';
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'white';
+              e.currentTarget.style.color = '#10b981';
+            }}
+          >
+            📧 Send to Recipients
+          </button>
         )}
 
         {/* Files List */}
@@ -262,11 +457,11 @@ export default function SharePage() {
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.borderColor = primaryColor}
                   onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
-                >
-              <div>
-                <div style={{ fontWeight: 500, marginBottom: 4 }}>{file.name}</div>
-                <div style={{ fontSize: 14, color: '#666' }}>
-                  {formatFileSize(file.size_bytes)}
+          >
+            <div>
+              <div style={{ fontWeight: 500, marginBottom: 4 }}>{file.name}</div>
+              <div style={{ fontSize: 14, color: '#666' }}>
+                {formatFileSize(file.size_bytes)}
                   {previewType && (
                     <span style={{
                       marginLeft: 8,
@@ -309,23 +504,23 @@ export default function SharePage() {
                         👁️ Preview
                       </button>
                     )}
-                    <button
-                      onClick={() => handleDownload(file.id, file.name)}
-                      disabled={downloading === file.id}
-                      style={{
+            <button
+              onClick={() => handleDownload(file.id, file.name)}
+              disabled={downloading === file.id}
+              style={{
                         padding: '10px 20px',
                         background: downloading === file.id ? '#9ca3af' : `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
-                        color: 'white',
-                        border: 'none',
+                color: 'white',
+                border: 'none',
                         borderRadius: 8,
                         fontSize: 14,
                         fontWeight: 600,
-                        cursor: downloading === file.id ? 'not-allowed' : 'pointer',
+                cursor: downloading === file.id ? 'not-allowed' : 'pointer',
                         boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-                      }}
-                    >
+              }}
+            >
                       {downloading === file.id ? '⏳ Downloading...' : '📥 Download'}
-                    </button>
+            </button>
                   </div>
                 </div>
               );
