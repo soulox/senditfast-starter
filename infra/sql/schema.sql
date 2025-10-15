@@ -7,6 +7,9 @@ create table if not exists app_user (
   name text,
   plan text not null default 'FREE',
   stripe_customer_id text,
+  authorizenet_subscription_id text,
+  subscription_started_at timestamptz,
+  subscription_status text,
   two_factor_secret text,
   two_factor_enabled boolean not null default false,
   created_at timestamptz not null default now()

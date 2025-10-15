@@ -142,6 +142,22 @@ export default function Header() {
                 </Link>
               </>
             )}
+            {((session.user as any)?.plan === 'PRO' || (session.user as any)?.plan === 'BUSINESS') && (
+              <Link
+                href="/subscription"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#5568d3'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#667eea'}
+              >
+                💳 Subscription
+              </Link>
+            )}
             <Link
               href="/admin"
               style={{

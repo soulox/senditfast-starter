@@ -112,6 +112,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               opacity: 1;
             }
           }
+          
+          @keyframes spin {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
         `}</style>
       </head>
       <body style={{ fontFamily: 'system-ui, sans-serif', margin: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

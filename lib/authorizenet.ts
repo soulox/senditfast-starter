@@ -18,6 +18,16 @@ interface CreateSubscriptionParams {
   customerFirstName?: string;
   customerLastName?: string;
   plan: 'PRO' | 'BUSINESS';
+  userId: string;
+  paymentProfile?: {
+    customerProfileId: string;
+    paymentProfileId: string;
+  };
+  creditCard?: {
+    cardNumber: string;
+    expirationDate: string;
+    cardCode: string;
+  };
 }
 
 export class AuthorizeNetClient {
@@ -168,6 +178,32 @@ export class AuthorizeNetClient {
    * Create a recurring subscription
    */
   async createSubscription(params: CreateSubscriptionParams) {
+    // Build payment configuration
+    let payment: any;
+    
+    if (params.paymentProfile) {
+      // Use existing payment profile
+      payment = {
+        profile: {
+          customerProfileId: params.paymentProfile.customerProfileId,
+          paymentProfile: {
+            paymentProfileId: params.paymentProfile.paymentProfileId,
+          },
+        },
+      };
+    } else if (params.creditCard) {
+      // Use credit card (will be tokenized by Authorize.NET)
+      payment = {
+        creditCard: {
+          cardNumber: params.creditCard.cardNumber,
+          expirationDate: params.creditCard.expirationDate,
+          cardCode: params.creditCard.cardCode,
+        },
+      };
+    } else {
+      throw new Error('Either paymentProfile or creditCard must be provided');
+    }
+
     const requestBody = {
       ARBCreateSubscriptionRequest: {
         merchantAuthentication: {
@@ -185,13 +221,108 @@ export class AuthorizeNetClient {
             totalOccurrences: params.totalOccurrences,
           },
           amount: params.amount,
+          payment: payment,
           order: {
+            invoiceNumber: `SUB-${params.plan}-${Date.now()}`,
             description: `SendItFast ${params.plan} Plan Subscription`,
           },
           customer: {
+            id: params.userId,
             email: params.customerEmail,
           },
         },
+      },
+    };
+
+    try {
+      console.log('[Authorize.Net] Creating subscription:', {
+        plan: params.plan,
+        amount: params.amount,
+        startDate: params.startDate,
+        userId: params.userId,
+      });
+
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      console.log('[Authorize.Net] Subscription response:', JSON.stringify(data, null, 2));
+
+      if (data.messages?.resultCode === 'Ok') {
+        return {
+          success: true,
+          subscriptionId: data.subscriptionId,
+        };
+      } else {
+        const errorMessage = data.messages?.message?.[0]?.text || 'Failed to create subscription';
+        const errorCode = data.messages?.message?.[0]?.code || 'UNKNOWN';
+        console.error('[Authorize.Net] Subscription error:', errorCode, errorMessage);
+        throw new Error(`${errorMessage} (Code: ${errorCode})`);
+      }
+    } catch (error) {
+      console.error('[Authorize.Net] Subscription Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancel a subscription
+   */
+  async cancelSubscription(subscriptionId: string) {
+    const requestBody = {
+      ARBCancelSubscriptionRequest: {
+        merchantAuthentication: {
+          name: this.config.apiLoginId,
+          transactionKey: this.config.transactionKey,
+        },
+        subscriptionId: subscriptionId,
+      },
+    };
+
+    try {
+      console.log('[Authorize.Net] Cancelling subscription:', subscriptionId);
+
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      console.log('[Authorize.Net] Cancel response:', JSON.stringify(data, null, 2));
+
+      if (data.messages?.resultCode === 'Ok') {
+        return {
+          success: true,
+        };
+      } else {
+        const errorMessage = data.messages?.message?.[0]?.text || 'Failed to cancel subscription';
+        throw new Error(errorMessage);
+      }
+    } catch (error) {
+      console.error('[Authorize.Net] Cancel Subscription Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get subscription details
+   */
+  async getSubscription(subscriptionId: string) {
+    const requestBody = {
+      ARBGetSubscriptionRequest: {
+        merchantAuthentication: {
+          name: this.config.apiLoginId,
+          transactionKey: this.config.transactionKey,
+        },
+        subscriptionId: subscriptionId,
       },
     };
 
@@ -209,15 +340,15 @@ export class AuthorizeNetClient {
       if (data.messages?.resultCode === 'Ok') {
         return {
           success: true,
-          subscriptionId: data.subscriptionId,
+          subscription: data.subscription,
         };
       } else {
         throw new Error(
-          data.messages?.message?.[0]?.text || 'Failed to create subscription'
+          data.messages?.message?.[0]?.text || 'Failed to get subscription'
         );
       }
     } catch (error) {
-      console.error('Authorize.Net Subscription Error:', error);
+      console.error('[Authorize.Net] Get Subscription Error:', error);
       throw error;
     }
   }

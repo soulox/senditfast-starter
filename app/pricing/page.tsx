@@ -126,7 +126,7 @@ export default function Pricing() {
             fontSize: 12,
             fontWeight: 500
           }}>
-            ✨ Start with Free plan • Upgrade anytime
+            ✨ Start with Free plan • Monthly recurring • Cancel anytime
           </div>
         </div>
 
@@ -355,6 +355,17 @@ export default function Pricing() {
                     </button>
                   )}
 
+                  {!isFree && !isCurrentPlan && (
+                    <p style={{
+                      textAlign: 'center',
+                      fontSize: 11,
+                      color: '#94a3b8',
+                      marginTop: 8,
+                      marginBottom: 0
+                    }}>
+                      Monthly subscription • Cancel anytime
+                    </p>
+                  )}
                   {isFree && !isCurrentPlan && (
                     <p style={{
                       textAlign: 'center',
@@ -381,11 +392,27 @@ export default function Pricing() {
           <p style={{ fontSize: 14, marginBottom: 12 }}>
             All plans include 99.9% uptime guarantee and secure file encryption
           </p>
+          <p style={{ fontSize: 13, marginBottom: 12, fontStyle: 'italic' }}>
+            💳 Subscriptions are billed monthly and managed by Authorize.Net
+          </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 12 }}>🔒 SSL Encrypted</span>
             <span style={{ fontSize: 12 }}>⚡ Fast Upload</span>
             <span style={{ fontSize: 12 }}>📧 Email Support</span>
-            <span style={{ fontSize: 12 }}>🔄 Easy Cancellation</span>
+            <span style={{ fontSize: 12 }}>🔄 Cancel Anytime</span>
+          </div>
+          <div style={{ marginTop: 20 }}>
+            <a 
+              href="/subscription" 
+              style={{ 
+                color: 'white', 
+                textDecoration: 'underline',
+                fontSize: 13,
+                opacity: 0.9
+              }}
+            >
+              Manage your subscription →
+            </a>
           </div>
         </div>
       </div>
